@@ -1,25 +1,45 @@
-CC=arm-none-eabi-gcc
+PROJECT := peppzzartos
+BUILD := build
+
+CC=arm-none-eabi
 CPU=cortex-m3
 CFLAGS= -c -mcpu=$(CPU) -mthumb -g -o0
-LDFLAGS= -nostdlib -T stm32_linker.ld -Wl,-Map=final.map
+LDFLAGS= -nostdlib -T stm32_linker.ld -Wl,-Map=$(BUILD)/$(PROJECT).map
 
 OPENOCD=/usr/share/openocd/scripts
 
-all: main.o stm32_startup.o usart.o scheduler.o final.elf
+INC_DIRS := -I kernel/inc \
+		  -I port/stm32f1/inc
+SRC_FILES := app/main.c \
+			 kernel/src/kernel.c \
+			 port/stm32f1/src/kernel_internal.c \
+			 port/stm32f1/src/startup.c \
+			 port/stm32f1/src/usart.c \
+			 port/stm32f1/src/gpio.c \
+			 port/stm32f1/src/systick.c
 
-main.o: main.c
-	$(CC) $(CFLAGS) $^ -o $@
-usart.o: usart.c 
-	$(CC) $(CFLAGS) $^ -o $@
-scheduler.o: scheduler.c 
-	$(CC) $(CFLAGS) $^ -o $@
-stm32_startup.o: stm32_startup.c
-	$(CC) $(CFLAGS) $^ -o $@
-final.elf: main.o stm32_startup.o usart.o scheduler.o
-	$(CC) $(LDFLAGS) $^ -o $@
+OBJS := $(SRC_FILES:%.c=$(BUILD)/%.o)
 
-clean:
-	rm -rf *.o *.elf *.out *.S *.map
+ELF := $(BUILD)/$(PROJECT).elf
+BIN := $(BUILD)/$(PROJECT).bin
 
-load: final.elf
+all: $(ELF) $(BIN)
+
+$(BUILD):
+	mkdir -p $(BUILD)
+
+$(BUILD)/%.o: %.c | $(BUILD)
+	mkdir -p $(dir $@)
+	$(CC)-gcc $(CFLAGS) $(INC_DIRS) -c $< -o $@
+
+$(ELF): $(OBJS)
+	$(CC)-gcc $(OBJS) $(LDFLAGS) -o $@
+
+$(BIN): $(ELF)
+	$(CC)-objcopy -O binary $< $@
+
+load: $(ELF) 
 	openocd -f $(OPENOCD)/interface/stlink.cfg -f $(OPENOCD)/target/stm32f1x.cfg -c "program $^ verify reset exit"
+
+clean: $(BUILD)
+	rm -rf $(BUILD)

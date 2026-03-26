@@ -1,4 +1,4 @@
-#include "stm32_startup.h"
+#include "interrupts.h"
 #include "usart.h"
 
 #define BUFFER_SIZE (64)

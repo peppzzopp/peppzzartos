@@ -8,28 +8,17 @@
 /* Internal Peripherals of cortex M3 are at 0xE0000000 to 0xE0100000.*/
 /* Systick is at 0xE000E010.*/
 
-#include <stdint.h>
 #include "usart.h"
-#include "scheduler.h"
+#include "kernel.h"
+#include "gpio.h"
+#include "systick.h"
 
-#define RCC_BASE (0x40021000)
-#define APB2_OFFSET (0x18)
-#define RCC_APB2 (*(volatile uint32_t *)(RCC_BASE + APB2_OFFSET))
-
-#define GPIO_BASE (0x40010800)
-#define PORT_SIZE (0x400)
-#define GPIO_PA_CRL (*(volatile uint32_t *)(GPIO_BASE))
-#define GPIO_PA_CRH (*(volatile uint32_t *)(GPIO_BASE + 0x4))
-#define GPIO_PA_IDR (*(volatile uint32_t *)(GPIO_BASE + 0x8))
-#define GPIO_PA_ODR (*(volatile uint32_t *)(GPIO_BASE + 0xC))
-
+/* SYSTICK */
 #define SYSTICK_BASE (0xE000E010)
 #define STK_CTRL (*(volatile uint32_t *)(SYSTICK_BASE))
 #define STK_LOAD (*(volatile uint32_t *)(SYSTICK_BASE + 0x4))
 #define STK_VAL (*(volatile uint32_t *)(SYSTICK_BASE + 0x8))
 #define STK_CALIB (*(volatile uint32_t *)(SYSTICK_BASE + 0xC))
-
-static volatile uint32_t ticks = 0;
 
 static void delay_function(uint32_t n){
     volatile uint32_t x = 0;
@@ -42,62 +31,32 @@ static void delay_function(uint32_t n){
 
 void led_task(void){
     while(1){
-        GPIO_PA_ODR ^= (1<<5);
-        delay_function(500000);
+        gpio_toggle(portA, 5);
+        kernel_task_delay(1000);
     }
 }
 void uart_task(void){
     uint8_t num = 'A';
     while(1){
         usart_write(&num,1);
-        delay_function(500000);
+        kernel_task_delay(1000);
     }
 }
 
-proc_t led_process = (proc_t){
-    .stack_pointer=0,
-    .priority=0,
-    .index=0,
-    .function=led_task
-};
-
-proc_t uart_process = (proc_t){
-    .stack_pointer=0,
-    .priority=0,
-    .index=0,
-    .function=uart_task
-};
 
 int main(){
-    scheduler_init();
+    kernel_init();
     usart_enable();
-    RCC_APB2 |= ((uint32_t)1 << 2);
-    GPIO_PA_CRL &= ~((uint32_t)0xF << 20); 
-    GPIO_PA_CRL |= ((uint32_t)0b11 << 20);
-    GPIO_PA_CRL |= ((uint32_t)0b00 << 22);
-   
-    /*USART specific GPIO setup*/
-    /*Tx (PA2)--> AF push-pull.*/
-    /*Rx (PA3)--> Input float.*/
-    GPIO_PA_CRL &= ~((uint32_t)0xFF << 8);
-    GPIO_PA_CRL |= ((uint32_t)0b01 << 14);
-    GPIO_PA_CRL |= ((uint32_t)0x9 << 8);
+    gpio_enable();
+    systick_enable();
+    
+    gpio_configure(portA, 5, 3, 0); 
+    gpio_configure(portA, 2, 3, 2);
+    gpio_configure(portA, 3, 0, 1);
 
-    uint32_t ten_ms_HCLK_by_8 = STK_CALIB & ~0xFF000000;
-    STK_CTRL = (uint32_t)0b011;
-    STK_VAL = 0;
-    uint32_t reload_value = ten_ms_HCLK_by_8/10;
-    STK_LOAD = reload_value - 1;
-    
-    uint8_t data[10];
-    for(uint32_t i=0; i<10; i++){
-        data[i]=i;
-    }
-    uint8_t led_command = 0;
-    
-    scheduler_create_process(&uart_process);
-    scheduler_create_process(&led_process);
-    scheduler_start();
+    kernel_task_add(uart_task);
+    kernel_task_add(led_task);
+    kernel_start();
 
     while(1){
     }
