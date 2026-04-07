@@ -4,12 +4,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef struct{
-    /*PORT*/
-    /*BAUDRATE*/
-    /*MODE*/
-}SOME_NAME;
-
 /*RCC Enable*/
 #define RCC_BASE (0x40021000)
 #define APB2_OFFSET (0x18)

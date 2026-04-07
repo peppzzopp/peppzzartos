@@ -6,13 +6,13 @@
 
 #define NVIC_ISER1 (*(uint32_t *)(0xE000E100 + 0x4))
 
-static uint8_t transmit_buffer[BUFFER_SIZE] = {0};
-static uint8_t transmit_write_index;
-static uint8_t transmit_read_index;
+static volatile uint8_t transmit_buffer[BUFFER_SIZE] = {0};
+static volatile uint8_t transmit_write_index;
+static volatile uint8_t transmit_read_index;
 
-static uint8_t recieve_buffer[BUFFER_SIZE] = {0};
-static uint8_t recieve_write_index;
-static uint8_t recieve_read_index;
+static volatile uint8_t recieve_buffer[BUFFER_SIZE] = {0};
+static volatile uint8_t recieve_write_index;
+static volatile uint8_t recieve_read_index;
 
 void usart_enable(void){
     RCC_APB1 |= ((uint32_t)1 << 17);
@@ -36,7 +36,6 @@ static bool usart_write_byte(uint8_t data){
     }
     transmit_buffer[transmit_write_index] = data;
     transmit_write_index = (transmit_write_index+1)&BUFFER_MASK;
-    USART2->CR1 |= ((uint32_t)1 << 7);
     return true;
 }
 
@@ -46,9 +45,11 @@ uint32_t usart_write(uint8_t *data, uint32_t length){
         if(usart_write_byte(data[i])){
             count++;
         } else{
+            USART2->CR1 |= ((uint32_t)1 << 7);
             return count;
         }
     }
+    USART2->CR1 |= ((uint32_t)1 << 7);
     return count;
 }
 

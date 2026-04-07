@@ -12,6 +12,6 @@ void systick_enable(void){
     uint32_t ten_ms_HCLK_by_8 = STK_CALIB & ~0xFF000000;
     STK_CTRL = (uint32_t)0b011;
     STK_VAL = 0;
-    uint32_t reload_value = ten_ms_HCLK_by_8/10;
-    STK_LOAD = reload_value - 1;
+    uint32_t reload_value = ten_ms_HCLK_by_8;
+    STK_LOAD = reload_value/2 - 1;
 }

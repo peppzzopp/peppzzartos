@@ -6,6 +6,7 @@
 
 void kernel_init(void);
 void kernel_start(void);
+void kernel_schedule(void);
 int32_t kernel_task_add(void (*function)(void));
 bool kernel_task_delete(int32_t index);
 void kernel_task_delay(uint32_t delay);

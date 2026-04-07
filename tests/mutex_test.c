@@ -2,9 +2,9 @@
 #include "kernel.h"
 #include "gpio.h"
 #include "systick.h"
-#include "sync/semaphore.h"
+#include "sync/mutex.h"
 
-kernel_semaphore_t flag;
+kernel_mutex_t flag;
 
 static void delay_function(uint32_t n){
     volatile uint32_t x = 0;
@@ -23,26 +23,26 @@ void led_task(void){
 }
 void uart_task_1(void){
     while(1){
-        kernel_semaphore_wait(&flag);
+        kernel_mutex_own(&flag);
         char str[] = "HELLO WORLD\n";
         for(uint32_t i=0; i<sizeof(str); i++){
             usart_write((uint8_t *)str+i, 1);
             kernel_task_delay(10);
         }
-        kernel_semaphore_signal(&flag);
+        kernel_mutex_free(&flag);
         kernel_task_delay(10);
     }
 }
 
 void uart_task_2(void){
     while(1){
-        kernel_semaphore_wait(&flag);
+        kernel_mutex_own(&flag);
         char str[] = "MARK MY WORDS\n";
         for(uint32_t i=0; i<sizeof(str); i++){
             usart_write((uint8_t *)str+i, 1);
             kernel_task_delay(10);
         }
-        kernel_semaphore_signal(&flag);
+        kernel_mutex_free(&flag);
         kernel_task_delay(10);
     }
 }
@@ -52,7 +52,7 @@ int main(){
     gpio_enable();
     systick_enable();
     
-    flag = kernel_semaphore_create(1);
+    flag = kernel_mutex_create();
 
     gpio_configure(portA, 5, 1, 0); 
     gpio_configure(portA, 2, 1, 2);
