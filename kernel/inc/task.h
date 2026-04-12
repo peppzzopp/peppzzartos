@@ -4,7 +4,7 @@
 
 typedef struct{
     uint32_t *stack_pointer;
-    volatile uint8_t delay_timer;
+    volatile uint32_t delay_timer;
     void (*task_function)(void);
 }task_t;
 

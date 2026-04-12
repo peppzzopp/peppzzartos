@@ -14,6 +14,8 @@ volatile uint32_t current_task;
 volatile uint32_t next_task;
 volatile uint32_t last_task;
 
+volatile static uint32_t tick_time;
+
 static inline uint32_t count_1s(uint32_t x){
     x = x - ((x >> 1) & 0x55555555);
     x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
@@ -59,6 +61,7 @@ void kernel_init(void){
 }
 
 void kernel_start(void){
+    tick_time = 0;
     kernel_schedule();
     current_task = 0xFFFFFFFF;
     kernel_yield();
@@ -109,6 +112,7 @@ bool kernel_task_delete(int32_t index){
 
 
 void kernel_ticks(void){
+    tick_time++;
     uint32_t mask = delayed_tasks;
     uint32_t i = 0;
     while(mask){
@@ -138,4 +142,8 @@ void kernel_task_delay(uint32_t delay){
         kernel_exit_critical();
         kernel_yield();
     }
+}
+
+uint32_t kernel_get_time(void){
+    return tick_time;
 }

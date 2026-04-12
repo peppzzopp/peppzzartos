@@ -37,6 +37,8 @@ typedef struct{
 void usart_enable(void);
 uint32_t usart_write(uint8_t *data, uint32_t length);
 uint32_t usart_read(uint8_t *data, uint32_t length);
+void usart_clear_send(void);
+void usart_clear_recieve(void);
 bool usart_data_available(void);
 
 #endif

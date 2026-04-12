@@ -6,11 +6,11 @@
 
 #define NVIC_ISER1 (*(uint32_t *)(0xE000E100 + 0x4))
 
-static volatile uint8_t transmit_buffer[BUFFER_SIZE] = {0};
+static volatile uint8_t transmit_buffer[BUFFER_SIZE];
 static volatile uint8_t transmit_write_index;
 static volatile uint8_t transmit_read_index;
 
-static volatile uint8_t recieve_buffer[BUFFER_SIZE] = {0};
+static volatile uint8_t recieve_buffer[BUFFER_SIZE];
 static volatile uint8_t recieve_write_index;
 static volatile uint8_t recieve_read_index;
 
@@ -97,4 +97,16 @@ void USART2_Handler(void){
             USART2->CR1 &= ~((uint32_t)1 << 7);
         }
     }
+}
+
+void usart_clear_send(void){
+    USART2->CR1 &= ~((uint32_t)1 << 7);
+    transmit_read_index = transmit_write_index;
+    USART2->CR1 |= ((uint32_t)1 << 7);
+}
+
+void usart_clear_recieve(void){
+    USART2->CR1 &= ~((uint32_t)1 << 5);
+    recieve_read_index = recieve_write_index;
+    USART2->CR1 |= ((uint32_t)1 << 5);
 }

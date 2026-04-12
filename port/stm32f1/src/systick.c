@@ -13,5 +13,5 @@ void systick_enable(void){
     STK_CTRL = (uint32_t)0b011;
     STK_VAL = 0;
     uint32_t reload_value = ten_ms_HCLK_by_8;
-    STK_LOAD = reload_value/2 - 1;
+    STK_LOAD = 999;
 }
