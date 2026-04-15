@@ -4,9 +4,10 @@
 #define TASK_MEMORY (40)
 
 extern uint32_t heap_start;
-static uint32_t allocator;
+volatile uint32_t allocator;
 volatile uint32_t ready_tasks;
 volatile static uint32_t delayed_tasks;
+volatile uint32_t deleted_tasks;
 task_t *task_table[32] = {0};
 uint32_t number_of_tasks = 0;
 
@@ -99,14 +100,26 @@ int32_t kernel_task_add(void (*function)(void)){
 }
 
 bool kernel_task_delete(int32_t index){
+    kernel_enter_critical();
     if(index == 0){
+        kernel_exit_critical();
         return false;
     }
     if(task_table[index] == 0){
+        kernel_exit_critical();
         return false;
     }
-    task_table[index] = 0;
-    allocator |= ((uint32_t)1 << index);
+    
+    deleted_tasks |= ((uint32_t)1 << index);
+    if(index == current_task){
+        ready_tasks &= ~((uint32_t)1 << index);
+        delayed_tasks &= ~((uint32_t)1 << index);
+        allocator |= ((uint32_t)1 << index);
+        kernel_schedule();
+        kernel_exit_critical();
+        kernel_yield();
+    }
+    kernel_exit_critical();
     return true;
 }
 
@@ -122,6 +135,19 @@ void kernel_ticks(void){
                 delayed_tasks &= ~((uint32_t)1 << i);
                 ready_tasks |= ((uint32_t)1 << i);
             }
+        }
+        mask >>= 1;
+        i = (i + 1)&0x1F;
+    }
+    mask = deleted_tasks;
+    i = 0;
+    while(mask){
+        if(mask & 1){
+            task_table[i] = 0;
+            deleted_tasks &= ~((uint32_t)1 << i);
+            ready_tasks &= ~((uint32_t)1 << i);
+            delayed_tasks &= ~((uint32_t)1 << i);
+            allocator |= ((uint32_t)1 << i);
         }
         mask >>= 1;
         i = (i + 1)&0x1F;

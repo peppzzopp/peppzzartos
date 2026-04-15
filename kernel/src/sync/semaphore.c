@@ -4,6 +4,7 @@
 
 extern uint32_t ready_tasks;
 extern uint32_t current_task;
+extern uint32_t allocator;
 
 kernel_semaphore_t kernel_semaphore_create(uint8_t count){
     return (kernel_semaphore_t){
@@ -34,6 +35,7 @@ void kernel_semaphore_wait(kernel_semaphore_t *semaphore){
 
 void kernel_semaphore_signal(kernel_semaphore_t *semaphore){
     kernel_enter_critical();
+    semaphore->in_line &= ~allocator;
     uint32_t boolean = semaphore->in_line >> ((semaphore->last_task + 1)&0x1F);
     uint32_t mask = (boolean) ? (boolean) : semaphore->in_line;
     uint32_t i = (boolean) ? (semaphore->last_task+1)&0x1F : 0;

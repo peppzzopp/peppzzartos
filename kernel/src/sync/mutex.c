@@ -4,6 +4,7 @@
 
 extern uint32_t current_task;
 extern uint32_t ready_tasks;
+extern uint32_t allocator;
 
 kernel_mutex_t kernel_mutex_create(void){
     return (kernel_mutex_t){
@@ -32,6 +33,7 @@ void kernel_mutex_own(kernel_mutex_t *mutex){
 
 void kernel_mutex_free(kernel_mutex_t *mutex){
     kernel_enter_critical();
+    mutex->in_line &= ~allocator;
     uint32_t boolean = mutex->in_line >> ((mutex->owner + 1)&0x1F);
     uint32_t mask = (boolean) ? (boolean) : mutex->in_line;
     uint32_t i = (boolean) ? (mutex->owner + 1)&0x1F : 0;
