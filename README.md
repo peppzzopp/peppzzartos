@@ -45,4 +45,4 @@ A dedicated low-priority task runs when no other tasks are ready, ensuring the C
 ## Building the project
 - To build the project, clone this repository and run make.
 - Currently the project can be run only on the **STM32F103RB** Nucleo board.
-- Information regarding porting this scheduler to any other architectures is given in <link to another doc in the repo>.
+- Information regarding porting this scheduler to any other architectures is given in [porting](docs/port.md).
