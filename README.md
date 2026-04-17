@@ -18,7 +18,7 @@ A dedicated low-priority task runs when no other tasks are ready, ensuring the C
 
 ### Task Lifecycle Management
 - Tasks can **self-delete safely**
-- ⚠️ Deleting a task that holds a mutex or a semaphore is **undefined and unsafe**
+- Deleting a task that holds a mutex or a semaphore is **undefined and unsafe**
 
 ### Optional timing analysis
 - Optional build configuration to enable timing analysis.
@@ -43,6 +43,6 @@ A dedicated low-priority task runs when no other tasks are ready, ensuring the C
 ---
 
 ## Building the project
-- To build the project, clone this repository and run make.
+- To build the project, clone this repository and run ```make```.
 - Currently the project can be run only on the **STM32F103RB** Nucleo board.
 - Information regarding porting this scheduler to any other architectures is given in [porting](docs/port.md).

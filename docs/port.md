@@ -57,6 +57,10 @@ Two interrupts are required for correct operation:
 - **SysTick** → Tick interrupt  
 - **PendSV** → Context switch interrupt  
 
+### Required Variables
+
+The context switch interrupt handler must use the **current_task** and **next_task** variables and switch the context based on those variables.
+
 ---
 
 ## Reference Implementation
