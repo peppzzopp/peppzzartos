@@ -31,7 +31,7 @@ Each task contains:
 
 ### Memory Layout
 
-- Each task is allocated a fixed-size stack (40 words)
+- Each task is allocated a fixed-size stack (40 words, can be changed in kernel.c)
 - The task control block resides within the same allocation
 - Task allocation is managed using a bitmask-based allocator
 
@@ -157,3 +157,13 @@ Task -> Tick Interrupt -> kernel_ticks() -> Scheduler Decision -> kernel_yield()
 
 - **Deferred context switching**
   - Keeps interrupt handlers lightweight and predictable
+
+---
+## Hardware Abstraction
+
+The current implementation includes minimal drivers for:
+- UART
+- GPIO
+- SysTick (enabling them for the microcontroller)
+
+These drivers are used to support the kernel and demo application but are not tightly coupled to the scheduler design.

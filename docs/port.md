@@ -62,7 +62,18 @@ Two interrupts are required for correct operation:
 The context switch interrupt handler must use the **current_task** and **next_task** variables and switch the context based on those variables.
 
 ---
-
 ## Reference Implementation
 
 An example implementation for the STM32F103 platform is available in the `port/` directory and can be used as a reference while porting to other architectures.
+
+## Hardware Support
+
+The reference implementation for STM32F103 includes basic drivers for:
+
+- **SysTick**: Provides the periodic tick interrupt required by the scheduler
+- **UART**: Used by the demo shell for interaction
+- **GPIO**: Used for basic I/O and testing
+
+When porting to a new platform:
+- A timer source equivalent to SysTick must be configured
+- UART/GPIO drivers are optional and only required for demo applications

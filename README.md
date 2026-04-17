@@ -39,8 +39,8 @@ A dedicated low-priority task runs when no other tasks are ready, ensuring the C
 ## Demo application
 - A UART-based shell is provided to demonstrate kernel functionality.
 - The shell supports a minimal set of commands to interact with tasks and synchronization primitives.
-- To access, build the project on supported hardware and then use **screen** or **minicom** to interact with the shell.
-- Type help to see the available commands.
+- To access, build the project on supported hardware and then use any **serial monitor** application like **screen** or **minicom** to interact with the shell.
+- Type ```help``` to see the available commands.
 
 ---
 
