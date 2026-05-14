@@ -30,6 +30,19 @@ void SysTick_Handler(void){
     #endif
 }
 
+void kernel_init_task_stack(task_t *task){
+    task->stack_pointer--;
+    *task->stack_pointer = ((uint32_t)1 << 24); /*xPSR*/
+    task->stack_pointer--;
+    *task->stack_pointer = (uint32_t)task->task_function; /*PC*/
+    task->stack_pointer--;
+    *task->stack_pointer = 0xFFFFFFFD; /*LR*/
+    for(uint32_t i=0; i<13; i++){ /*R0-R12*/
+        task->stack_pointer--;
+        *task->stack_pointer = 0x00000000;
+    }
+}
+
 void kernel_yield(void){
     *(volatile uint32_t *)(0xE000ED00 + 0x04) |= ((uint32_t)1 << 28);
 }

@@ -1,7 +1,7 @@
 #include "kernel.h"
 #include "kernel_internal.h"
 
-#define TASK_MEMORY (40)
+#define TASK_MEMORY (48)
 
 extern uint32_t heap_start;
 volatile uint32_t allocator;
@@ -31,7 +31,7 @@ inline void kernel_schedule(void){
     last_task = (current_task == 0) ? last_task : current_task;
     uint32_t mask_pre = ready_tasks & ~(0x1);
     uint32_t mask = (mask_pre >> ((last_task + 1)&0x1F)) ? (mask_pre >> ((last_task + 1)&0x1F)) : mask_pre;
-    uint32_t i = (mask_pre >> ((last_task + 1)&0x1F)) ? last_task+1 : 0;
+    uint32_t i = (mask_pre >> ((last_task + 1)&0x1F)) ? (last_task+1)&0x1F : 0;
     while(mask){
         if(mask & 1){
             next_task = i;
@@ -74,8 +74,10 @@ int32_t kernel_task_add(void (*function)(void)){
     if(allocator != 0x00000000){
         uint32_t memory_index = count_1s(allocator ^ (allocator - 1));
         task_t *task;
-        task = (task_t *)((uint32_t *)&heap_start + (memory_index)*TASK_MEMORY);
-        task->stack_pointer = (uint32_t *)((uint8_t *)task - sizeof(task_t));
+        uint8_t *top_of_the_stack;
+        top_of_the_stack = (uint8_t *)((uint32_t *)&heap_start + (memory_index)*TASK_MEMORY);
+        task = (task_t *)(top_of_the_stack - sizeof(task_t));
+        task->stack_pointer = (uint32_t *)task;
         task->task_function = function;
         allocator &= ~((uint32_t)1 << (memory_index - 1));
         ready_tasks |= ((uint32_t)1 << (memory_index - 1));
@@ -83,17 +85,9 @@ int32_t kernel_task_add(void (*function)(void)){
         task_table[memory_index - 1]=task;
 
         task->delay_timer = 0;
+        
+        kernel_init_task_stack(task);
 
-        task->stack_pointer--;
-        *task->stack_pointer = ((uint32_t)1 << 24); /*xPSR*/
-        task->stack_pointer--;
-        *task->stack_pointer = (uint32_t)task->task_function; /*PC*/
-        task->stack_pointer--;
-        *task->stack_pointer = 0xFFFFFFFD; /*LR*/
-        for(uint32_t i=0; i<13; i++){ /*R0-R12*/
-            task->stack_pointer--;
-            *task->stack_pointer = 0x00000000;
-        }
         return (memory_index-1);
     }
     return -1;
