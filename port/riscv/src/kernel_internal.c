@@ -4,10 +4,6 @@
 #ifdef PEPPZZARTOS_TIMING_ENABLE
 extern uint32_t trap_start;
 extern uint32_t trap_end;
-extern uint32_t tick_start;
-extern uint32_t tick_end;
-extern uint32_t context_switch_start;
-extern uint32_t context_switch_end;
 #endif
 
 

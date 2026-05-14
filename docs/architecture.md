@@ -31,7 +31,7 @@ Each task contains:
 
 ### Memory Layout
 
-- Each task is allocated a fixed-size stack (40 words, can be changed in kernel.c)
+- Each task is allocated a fixed-size stack (configurable via `TASK_MEMORY` in kernel.c)
 - The task control block resides within the same allocation
 - Task allocation is managed using a bitmask-based allocator
 

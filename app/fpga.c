@@ -17,18 +17,20 @@ void led0_task(void){
         kernel_mutex_own(&led_mutex);
         LED_GPIO ^= (uint32_t)(1);
         kernel_mutex_free(&led_mutex);
-        kernel_task_delay(200);
+        kernel_task_delay(600);
     }
 }
 void led1_task(void){
+    kernel_task_delay(100);
     while(1){
         kernel_mutex_own(&led_mutex);
         LED_GPIO ^= (uint32_t)(1<<1);
         kernel_mutex_free(&led_mutex);
-        kernel_task_delay(400);
+        kernel_task_delay(600);
     }
 }
 void led2_task(void){
+    kernel_task_delay(200);
     while(1){
         kernel_mutex_own(&led_mutex);
         LED_GPIO ^= (uint32_t)(1<<2);
@@ -37,27 +39,30 @@ void led2_task(void){
     }
 }
 void led3_task(void){
+    kernel_task_delay(300);
     while(1){
         kernel_mutex_own(&led_mutex);
         LED_GPIO ^= (uint32_t)(1<<3);
         kernel_mutex_free(&led_mutex);
-        kernel_task_delay(800);
+        kernel_task_delay(600);
     }
 }
 void led4_task(void){
+    kernel_task_delay(400);
     while(1){
         kernel_mutex_own(&led_mutex);
         LED_GPIO ^= (uint32_t)(1<<4);
         kernel_mutex_free(&led_mutex);
-        kernel_task_delay(1000);
+        kernel_task_delay(600);
     }
 }
 void led5_task(void){
+    kernel_task_delay(500);
     while(1){
         kernel_mutex_own(&led_mutex);
         LED_GPIO ^= (uint32_t)(1<<5);
         kernel_mutex_free(&led_mutex);
-        kernel_task_delay(1200);
+        kernel_task_delay(600);
     }
 }
 

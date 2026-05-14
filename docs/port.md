@@ -27,7 +27,11 @@ The following functions must be implemented or provided:
   - Re-enables interrupts after a critical section
   - Must be implemented as part of the port
 
-  **kernel_timing_init()**
+- **kernel_init_task_stack()**
+  - Handles the initialization of the stack for the tasks when created
+  - Must be implemented as part of the port
+
+- **kernel_timing_init()**
   - Optional provision for debugging timing related issues.
   - Mentioned in detail [here](timing.md).
 
@@ -52,10 +56,14 @@ Two interrupts are required for correct operation:
   - Triggered via `kernel_yield()`
   - ISR is responsible for saving and restoring task context
 
-### Example (STM32F103)
+### Example
+#### STM32F103
+- **SysTick** -> Tick interrupt
+- **PendSV** -> Context switch interrupt
 
-- **SysTick** → Tick interrupt  
-- **PendSV** → Context switch interrupt  
+#### [PEPPZZEMCU](https://github.com/peppzzopp/peppzzemcu)
+- **Timer interrupt** -> Tick interrupt
+- **ECALL** -> used for Context switch
 
 ### Required Variables
 
@@ -64,7 +72,7 @@ The context switch interrupt handler must use the **current_task** and **next_ta
 ---
 ## Reference Implementation
 
-An example implementation for the STM32F103 platform is available in the `port/` directory and can be used as a reference while porting to other architectures.
+Example implementations for the STM32F103 platform and [peppzzemcu](https://github.com/peppzzopp/peppzzemcu) are available in the `port/` directory and can be used as a reference while porting to other architectures.
 
 ## Hardware Support
 
@@ -73,6 +81,8 @@ The reference implementation for STM32F103 includes basic drivers for:
 - **SysTick**: Provides the periodic tick interrupt required by the scheduler
 - **UART**: Used by the demo shell for interaction
 - **GPIO**: Used for basic I/O and testing
+
+The reference implementations for [peppzzemcu](https://github.com/peppzzopp/peppzzemcu) has no drivers as it is intended to be run on **Tang Nano 9K FPGA**.
 
 When porting to a new platform:
 - A timer source equivalent to SysTick must be configured

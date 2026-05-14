@@ -16,7 +16,7 @@ Timing instrumentation is enabled at compile time using:
 If using the provided Makefile:
 
 ```bash
-make timing
+make timing (DEVICE=riscv)
 ```
 
 ---
@@ -30,6 +30,7 @@ For each architecture, the function `kernel_timing_init()` must be implemented.
 - This function should:
   - Enable and initialize a hardware cycle counter
   - Ensure the counter increments at CPU frequency (or a known rate)
+**Note**: For specific architectures where cycle count has to be enabled from reset like riscv, the initialization function can be empty.
 
 ---
 
@@ -46,6 +47,7 @@ Refer to the [Porting Guide](port.md) for details on these interrupts.
 
 ### Required Variables
 
+#### STM32 port
 The following global variables must be defined for compatibility with the provided GDB script:
 
 - `tick_start`
@@ -54,6 +56,12 @@ The following global variables must be defined for compatibility with the provid
 - `context_switch_end`
 
 These variables should store cycle counter values at appropriate points in execution.
+
+#### RISCV port
+RiscV port of the kernel follows minimal trap handling where execution jumps to common trap handler for any trap.
+- `trap_start`
+- `trap_end`
+These variables must be present and store appropriate values to be compatible with the timing measurement system provided by [peppzzemcu](https://github.com/peppzzopp/peppzzemcu)
 
 ---
 
@@ -72,7 +80,7 @@ This ensures zero overhead when timing is disabled.
 ---
 
 ## Usage
-
+### STM32 port
 1. Connect to the target using **OpenOCD** and **GDB**
 2. Load the firmware with timing enabled
 3. From within GDB, source the provided script:
@@ -85,21 +93,46 @@ source timing_measure.gdb
    - Print timing statistics to the console
    - Log results to `timing_results.txt`
 
+### RISCV port
+1. This port is intended to be run on [peppzzemcu](https://github.com/peppzzopp/peppzzemcu) project.
+2. So clone the project repo and run the commads
+```bash
+git clone https://github.com/peppzzopp/peppzzemcu --recursive
+cd peppzzemcu
+make perf
+```
+3. Results will be stored in performance_log.txt.
 ---
 
 ## Measured Results
 
+### STM32 port
 Measurements were obtained using the instrumentation described above on the **STM32F103RB** platform for the shell demo.
 
-- **CPU Frequency**: 8 MHz  
+- **CPU Frequency**: 8 MHz
 - **Tick Frequency**: 1 kHz (1 ms period)
 
-- **Tick Handler Duration**: ~443 cycles  
-- **Context Switch Latency**: 74 cycles  
+- **Tick Handler Duration**: ~443 cycle 
+- **Context Switch Latency**: 74 cycle 
 
 This corresponds to approximately:
-- Tick handler: ~55 µs  
-- Context switch: ~9 µs  
+- Tick handler: ~55 microsec
+- Context switch: ~9 microsec
+
+### RISCV port
+Measurements were obtained using the instrumentation described above on the **[peppzzemcu](https://github.com/peppzzopp/peppzzemcu)** platform for the fpga demo.
+
+- **CPU Frequency**: 27 MHz
+- **Tick Frequency**: 1 kHz (1 ms period)
+
+- **Maximum Trap Overhead**: 1976 cycle 
+- **Minimum Trap Overhead**: 987 cycle 
+- **Average Trap Overhead**: 1013 cycle 
+
+This corresponds to approximately:
+- Maximum : 73.19 microsec
+- Minimum : 36.56 microsec
+- Average : 37.52 microsec
 
 ### Notes on Measurement
 
